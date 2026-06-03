@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Novely Saver",
+  "version": "1.0.0",
+  "description": "Capture ideias, referências e documentações em um clique. Integre sua navegação diretamente ao ecossistema Novely.",
+  "author": "DeDev",
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "contextMenus",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost:8080/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Enviar para o Novely OS",
+    "default_icon": "logo.png"
+  },
+  "icons": {
+    "16": "logo.png",
+    "48": "logo.png",
+    "128": "logo.png"
+  }
+}
