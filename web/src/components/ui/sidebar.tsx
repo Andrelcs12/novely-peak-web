@@ -333,7 +333,8 @@ function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="sidebar-header"
       data-sidebar="header"
-      className={cn("flex flex-col gap-2 p-2", className)}
+      // Adicionei um fundo ligeiramente diferente e uma borda roxa embaixo do título
+      className={cn("flex flex-col gap-2 p-4 border-b border-purple-900/40 bg-purple-950/10", className)}
       {...props}
     />
   )
