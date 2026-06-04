@@ -1,184 +1,119 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { Link2, CheckSquare, Droplets, Timer } from "lucide-react";
+import LinkPage from "./pages/links/LinkPage";
+import TarefasPage from "./pages/tasks/TarefasPage";
+import HabitosPage from "./pages/habits/HabitosPage";
+import PomodoroPage from "./pages/pomodoro/PomodoroPage";
 
-interface TabStatus {
-  type: "idle" | "loading" | "success" | "error";
-  message: string;
-}
+type TabType = "link" | "tarefas" | "habitos" | "foco";
 
 function App() {
-  const [title, setTitle] = useState("");
-  const [url, setUrl] = useState("");
-  const [categoryName, setCategoryName] = useState("Dev");
-  const [notes, setNotes] = useState("");
-  const [status, setStatus] = useState<TabStatus>({
-    type: "idle",
-    message: "",
-  });
+  const [activeTab, setActiveTab] = useState<TabType>("link");
 
-  const USER_ID = "a3b84f2c-1234-5678-abcd-ef1234567890";
-  const API_URL = `http://localhost:8080/api/users/${USER_ID}/links`;
-
-  useEffect(() => {
-    if (chrome?.tabs) {
-      chrome.tabs.query(
-        { active: true, currentWindow: true },
-        (tabs) => {
-          const tab = tabs[0];
-          if (tab?.title) setTitle(tab.title);
-          if (tab?.url) setUrl(tab.url);
-        }
-      );
-    }
-  }, []);
-
-  const handleSave = async () => {
-    if (!title.trim() || !url.trim()) {
-      setStatus({ type: "error", message: "Título e URL são obrigatórios." });
-      return;
-    }
-
-    setStatus({ type: "loading", message: "Salvando no Peak..." });
-
-    const payload = {
-      title,
-      url,
-      categoryName,
-      notes: notes ? [notes] : ["Salvo via Novely Saver"],
-    };
-
-    try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        setStatus({ type: "success", message: "✓ Link salvo com sucesso" });
-        setNotes("");
-      } else {
-        setStatus({ type: "error", message: "Erro ao salvar o link." });
-      }
-    } catch (err) {
-      console.error(err);
-      setStatus({ type: "error", message: "Servidor offline." });
+  // Roteamento dinâmico por Estado (SPA Context)
+  const renderPage = () => {
+    switch (activeTab) {
+      case "link":
+        return <LinkPage />;
+      case "tarefas":
+        return <TarefasPage />;
+      case "habitos":
+        return <HabitosPage />;
+      case "foco":
+        return <PomodoroPage />;
+      default:
+        return <LinkPage />;
     }
   };
 
   return (
-    <div className="w-[390px] min-h-[580px] bg-slate-950 text-white p-5 font-sans">
-
-      {/* CABEÇALHO */}
-      <div className="flex items-center justify-between mb-6">
+    <div className="w-[360px] h-[480px] bg-slate-950 text-white flex flex-col font-sans select-none overflow-hidden">
+      
+      {/* CABEÇALHO ESTÁTICO DE STATUS */}
+      <div className="p-4 bg-slate-900/40 border-b border-slate-900/80 flex items-center justify-between backdrop-blur-sm">
         <div className="flex items-center gap-3">
-
+          {/* Caixa do Logo com Roxo Sólido da Identidade */}
           <div
-            className="rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-violet-900/40"
-            style={{ width: 44, height: 44, flexShrink: 0 }}
+            className="rounded-xl bg-purple-600 flex items-center justify-center shadow-lg shadow-purple-900/30 border border-purple-500/20"
+            style={{ width: 36, height: 36, flexShrink: 0 }}
           >
             <img
-              src="/logoback.png"
+              src="/logo.png"
               alt="Novely"
-              style={{ width: 24, height: 24, objectFit: "contain", display: "block" }}
+              style={{ width: 20, height: 20, objectFit: "contain", display: "block" }}
             />
           </div>
-
           <div>
-            <h1 className="text-lg font-bold tracking-tight">
-              Novely Saver
-            </h1>
-            <p className="text-xs text-slate-400">
-              Capture links instantaneamente
-            </p>
+            <h1 className="text-xs font-bold tracking-tight text-slate-100 uppercase">Novely Saver</h1>
+            <p className="text-[10px] text-slate-400 font-medium">Um clique, controle total</p>
           </div>
         </div>
-
-        <div className="text-[10px] px-2 py-1 rounded-full border border-slate-800 text-slate-500">
-          v1.0
+        <div className="text-[9px] px-2 py-0.5 rounded-md border border-slate-800 bg-slate-900 text-slate-500 font-mono font-bold">
+          v1.0.0
         </div>
       </div>
 
-      {/* PRÉVIA DA PÁGINA */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3 mb-5">
-        <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-2">
-          Página Atual
-        </p>
-        <h2 className="text-sm font-semibold text-slate-100 line-clamp-2">
-          {title || "Carregando..."}
-        </h2>
-        <p className="text-[11px] text-slate-500 truncate mt-2">
-          {url}
-        </p>
+      {/* ÁREA DE CONTEÚDO ROLÁVEL ISOLADA */}
+      <div className="flex-1 overflow-y-auto p-4 bg-slate-950 custom-scrollbar">
+        {renderPage()}
       </div>
 
-      {/* FORMULÁRIO */}
-      <div className="space-y-4">
-        <div>
-          <label className="text-xs text-slate-400 mb-1 block">
-            Categoria
-          </label>
-          <input
-            value={categoryName}
-            onChange={(e) => setCategoryName(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-800 focus:border-violet-500 rounded-xl px-4 py-3 text-sm outline-none transition"
-            placeholder="Ex: Backend"
-          />
-        </div>
-
-        <div>
-          <label className="text-xs text-slate-400 mb-1 block">
-            Anotações
-          </label>
-          <textarea
-            rows={4}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Por que você está salvando isso?"
-            className="w-full bg-slate-900 border border-slate-800 focus:border-violet-500 rounded-xl px-4 py-3 text-sm outline-none resize-none transition"
-          />
-        </div>
-
-        {/* ETIQUETAS */}
-        <div className="flex gap-2 flex-wrap">
-          {["Dev", "Frontend", "Backend", "UI", "Inspiração"].map((tag) => (
-            <button
-              key={tag}
-              onClick={() => setCategoryName(tag)}
-              className={`px-3 py-1.5 rounded-full border text-xs transition ${
-                categoryName === tag
-                  ? "bg-violet-600/20 border-violet-500 text-violet-300"
-                  : "bg-slate-900 border-slate-800 hover:border-violet-500 text-slate-300"
-              }`}
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* STATUS */}
-      {status.message && (
-        <div
-          className={`mt-5 rounded-xl px-4 py-3 text-sm border ${
-            status.type === "success"
-              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-              : status.type === "error"
-              ? "bg-red-500/10 border-red-500/20 text-red-400"
-              : "bg-slate-900 border-slate-800 text-slate-400"
+      {/* BARRA DE NAVEGAÇÃO INFERIOR FIXA */}
+      <div className="h-14 bg-slate-900/90 border-t border-slate-900 grid grid-cols-4 items-center justify-items-center px-1 backdrop-blur-sm">
+        
+        {/* ABA: link */}
+        <button
+          onClick={() => setActiveTab("link")}
+          className={`flex flex-col items-center justify-center w-full h-full transition-all gap-1 cursor-pointer active:scale-95 ${
+            activeTab === "link" 
+              ? "text-purple-400 font-semibold drop-shadow-[0_0_6px_rgba(147,51,234,0.4)]" 
+              : "text-slate-500 hover:text-slate-300"
           }`}
         >
-          {status.message}
-        </div>
-      )}
+          <Link2 size={16} strokeWidth={activeTab === "link" ? 2.5 : 2} />
+          <span className="text-[9px] tracking-wide">Links</span>
+        </button>
 
-      {/* BOTÃO */}
-      <button
-        onClick={handleSave}
-        disabled={status.type === "loading"}
-        className="mt-5 w-full h-12 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-90 disabled:opacity-50 font-semibold text-sm shadow-xl shadow-violet-900/40 transition-all active:scale-[0.98]"
-      >
-        {status.type === "loading" ? "Salvando..." : "Salvar no Peak"}
-      </button>
+        {/* ABA: TAREFAS */}
+        <button
+          onClick={() => setActiveTab("tarefas")}
+          className={`flex flex-col items-center justify-center w-full h-full transition-all gap-1 cursor-pointer active:scale-95 ${
+            activeTab === "tarefas" 
+              ? "text-purple-400 font-semibold drop-shadow-[0_0_6px_rgba(147,51,234,0.4)]" 
+              : "text-slate-500 hover:text-slate-300"
+          }`}
+        >
+          <CheckSquare size={16} strokeWidth={activeTab === "tarefas" ? 2.5 : 2} />
+          <span className="text-[9px] tracking-wide">Tarefas</span>
+        </button>
+
+        {/* ABA: HÁBITOS */}
+        <button
+          onClick={() => setActiveTab("habitos")}
+          className={`flex flex-col items-center justify-center w-full h-full transition-all gap-1 cursor-pointer active:scale-95 ${
+            activeTab === "habitos" 
+              ? "text-purple-400 font-semibold drop-shadow-[0_0_6px_rgba(147,51,234,0.4)]" 
+              : "text-slate-500 hover:text-slate-300"
+          }`}
+        >
+          <Droplets size={16} strokeWidth={activeTab === "habitos" ? 2.5 : 2} />
+          <span className="text-[9px] tracking-wide">Hábitos</span>
+        </button>
+
+        {/* ABA: FOCO */}
+        <button
+          onClick={() => setActiveTab("foco")}
+          className={`flex flex-col items-center justify-center w-full h-full transition-all gap-1 cursor-pointer active:scale-95 ${
+            activeTab === "foco" 
+              ? "text-purple-400 font-semibold drop-shadow-[0_0_6px_rgba(147,51,234,0.4)]" 
+              : "text-slate-500 hover:text-slate-300"
+          }`}
+        >
+          <Timer size={16} strokeWidth={activeTab === "foco" ? 2.5 : 2} />
+          <span className="text-[9px] tracking-wide">Foco</span>
+        </button>
+      </div>
+
     </div>
   );
 }
